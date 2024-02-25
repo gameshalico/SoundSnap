@@ -10,7 +10,6 @@ namespace SoundSnap
         private static SoundBuilderBuffer s_poolRoot = new();
 
         private SoundBuilderBuffer _next;
-        public ushort Version;
 
         public AudioClip Clip;
         public AudioMixerGroup OutputAudioMixerGroup;
@@ -33,6 +32,7 @@ namespace SoundSnap
         public Action<PlaybackEndType> OnPlaybackEnd;
         public Action OnLoop;
 
+        public ushort Version { get; private set; }
 
         public static SoundBuilderBuffer Rent()
         {
