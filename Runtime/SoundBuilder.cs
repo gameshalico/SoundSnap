@@ -9,8 +9,8 @@ namespace SoundSnap
     {
         private static SoundBuilderBuffer s_poolRoot = new();
 
+        private SoundBuilderBuffer _next;
         public ushort Version;
-        public SoundBuilderBuffer Next;
 
         public AudioClip Clip;
         public AudioMixerGroup OutputAudioMixerGroup;
@@ -37,15 +37,15 @@ namespace SoundSnap
         public static SoundBuilderBuffer Rent()
         {
             SoundBuilderBuffer result;
-            if (s_poolRoot.Next == null)
+            if (s_poolRoot._next == null)
             {
                 result = new SoundBuilderBuffer();
             }
             else
             {
-                result = s_poolRoot.Next;
-                s_poolRoot.Next = result.Next;
-                result.Next = null;
+                result = s_poolRoot._next;
+                s_poolRoot._next = result._next;
+                result._next = null;
             }
 
             return result;
@@ -78,16 +78,16 @@ namespace SoundSnap
 
             if (buffer.Version != ushort.MaxValue)
             {
-                buffer.Next = s_poolRoot;
+                buffer._next = s_poolRoot;
                 s_poolRoot = buffer;
             }
         }
     }
 
-    public struct SoundBuilder : IDisposable
+    public readonly struct SoundBuilder : IDisposable
     {
         private readonly ushort _version;
-        private SoundBuilderBuffer _buffer;
+        private readonly SoundBuilderBuffer _buffer;
 
         public static SoundBuilder Create()
         {
@@ -321,7 +321,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithClip(AudioClip clip)
+        public SoundBuilder WithClip(AudioClip clip)
         {
             CheckBuffer();
             _buffer.Clip = clip;
@@ -329,7 +329,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithOutputAudioMixerGroup(AudioMixerGroup outputAudioMixerGroup)
+        public SoundBuilder WithOutputAudioMixerGroup(AudioMixerGroup outputAudioMixerGroup)
         {
             CheckBuffer();
             _buffer.OutputAudioMixerGroup = outputAudioMixerGroup;
@@ -337,7 +337,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithMute(bool mute)
+        public SoundBuilder WithMute(bool mute)
         {
             CheckBuffer();
             _buffer.Mute = mute;
@@ -345,7 +345,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithVolume(float volume)
+        public SoundBuilder WithVolume(float volume)
         {
             CheckBuffer();
             _buffer.Volume = volume;
@@ -353,7 +353,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithPitch(float pitch)
+        public SoundBuilder WithPitch(float pitch)
         {
             CheckBuffer();
             _buffer.Pitch = pitch;
@@ -361,7 +361,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithPriority(int priority)
+        public SoundBuilder WithPriority(int priority)
         {
             CheckBuffer();
             _buffer.Priority = priority;
@@ -369,7 +369,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithPanStereo(float panStereo)
+        public SoundBuilder WithPanStereo(float panStereo)
         {
             CheckBuffer();
             _buffer.PanStereo = panStereo;
@@ -377,7 +377,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithStartSample(int startSample)
+        public SoundBuilder WithStartSample(int startSample)
         {
             CheckBuffer();
             _buffer.StartSample = startSample;
@@ -385,7 +385,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithEndSample(int endSample)
+        public SoundBuilder WithEndSample(int endSample)
         {
             CheckBuffer();
             _buffer.EndSample = endSample;
@@ -393,7 +393,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithLoopStartSample(int loopStartSample)
+        public SoundBuilder WithLoopStartSample(int loopStartSample)
         {
             CheckBuffer();
             _buffer.LoopStartSample = loopStartSample;
@@ -401,7 +401,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithLoopCount(int loopCount)
+        public SoundBuilder WithLoopCount(int loopCount)
         {
             CheckBuffer();
             _buffer.LoopCount = loopCount;
@@ -409,7 +409,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithCarryingOverLoopDifference(bool isCarryingOverLoopDifference)
+        public SoundBuilder WithCarryingOverLoopDifference(bool isCarryingOverLoopDifference)
         {
             CheckBuffer();
             _buffer.IsCarryingOverLoopDifference = isCarryingOverLoopDifference;
@@ -417,7 +417,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder PlayImmediate()
+        public SoundBuilder PlayImmediate()
         {
             CheckBuffer();
             _buffer.TimingMode = TimingMode.Immediate;
@@ -425,7 +425,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder Schedule(double dspTime)
+        public SoundBuilder Schedule(double dspTime)
         {
             CheckBuffer();
             _buffer.TimingMode = TimingMode.Schedule;
@@ -434,7 +434,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithDelay(double delay)
+        public SoundBuilder WithDelay(double delay)
         {
             CheckBuffer();
             _buffer.TimingMode = TimingMode.Delay;
@@ -443,7 +443,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithScheduledEndTime(double scheduledEndTime)
+        public SoundBuilder WithScheduledEndTime(double scheduledEndTime)
         {
             CheckBuffer();
             _buffer.ScheduledEndTime = scheduledEndTime;
@@ -451,7 +451,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithOnPlaybackEnd(Action<PlaybackEndType> onPlaybackEnd)
+        public SoundBuilder WithOnPlaybackEnd(Action<PlaybackEndType> onPlaybackEnd)
         {
             CheckBuffer();
             _buffer.OnPlaybackEnd += onPlaybackEnd;
@@ -459,7 +459,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly SoundBuilder WithOnLoop(Action onLoop)
+        public SoundBuilder WithOnLoop(Action onLoop)
         {
             CheckBuffer();
             _buffer.OnLoop += onLoop;
@@ -467,7 +467,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private readonly void CheckBuffer()
+        private void CheckBuffer()
         {
             if (_buffer == null || _buffer.Version != _version)
                 throw new InvalidOperationException("The SoundBuilder is invalid.");
@@ -496,9 +496,10 @@ namespace SoundSnap
         {
             if (_buffer == null)
                 return;
+            if (_buffer.Version != _version)
+                return;
 
             SoundBuilderBuffer.Return(_buffer);
-            _buffer = null;
         }
     }
 }
