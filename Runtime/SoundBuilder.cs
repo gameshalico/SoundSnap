@@ -78,7 +78,7 @@ namespace SoundSnap
 
             if (buffer.Version != ushort.MaxValue)
             {
-                buffer.Next = s_poolRoot.Next;
+                buffer.Next = s_poolRoot;
                 s_poolRoot = buffer;
             }
         }
