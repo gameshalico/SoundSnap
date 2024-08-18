@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SoundSnap
 {
-    public static class SoundPlayerUtility
+    public static class SoundAgentUtility
     {
         public static double EvaluateDspTime(TimingMode timingMode, double timingValue)
         {

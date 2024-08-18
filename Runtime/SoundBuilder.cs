@@ -316,7 +316,7 @@ namespace SoundSnap
             get
             {
                 CheckBuffer();
-                return SoundPlayerUtility.EvaluateDspTime(_buffer.TimingMode, _buffer.TimingValue);
+                return SoundAgentUtility.EvaluateDspTime(_buffer.TimingMode, _buffer.TimingValue);
             }
         }
 

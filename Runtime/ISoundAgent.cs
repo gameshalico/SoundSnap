@@ -4,7 +4,7 @@ using UnityEngine.Audio;
 
 namespace SoundSnap
 {
-    public interface ISoundPlayer
+    public interface ISoundAgent
     {
         ushort Version { get; }
         double PlayDspTime { get; }

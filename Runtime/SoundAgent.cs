@@ -7,7 +7,7 @@ namespace SoundSnap
 {
     [RequireComponent(typeof(AudioSource))]
     [AddComponentMenu("")]
-    public class SoundPlayer : MonoBehaviour, ISoundPlayer
+    public class SoundAgent : MonoBehaviour, ISoundAgent
     {
         public enum PlaybackState
         {
@@ -227,7 +227,7 @@ namespace SoundSnap
 
         private void PlayAudioSource(TimingMode timingMode, double timingValue)
         {
-            PlayDspTime = SoundPlayerUtility.EvaluateDspTime(timingMode, timingValue);
+            PlayDspTime = SoundAgentUtility.EvaluateDspTime(timingMode, timingValue);
             CurrentPlaybackState = PlaybackState.Playing;
             switch (timingMode)
             {

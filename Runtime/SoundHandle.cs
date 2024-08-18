@@ -9,25 +9,25 @@ namespace SoundSnap
         public static SoundHandle Invalid => new();
 
         private readonly ushort _version;
-        private readonly ISoundPlayer _player;
+        private readonly ISoundAgent _agent;
 
-        public SoundHandle(ISoundPlayer player)
+        public SoundHandle(ISoundAgent agent)
         {
-            _version = player.Version;
-            _player = player;
+            _version = agent.Version;
+            _agent = agent;
         }
 
         public SoundHandle(SoundHandle other)
         {
             _version = other._version;
-            _player = other._player;
+            _agent = other._agent;
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsActive()
         {
-            return _player != null && _player.Version == _version;
+            return _agent != null && _agent.Version == _version;
         }
 
 
@@ -37,14 +37,14 @@ namespace SoundSnap
             get
             {
                 CheckPlayer();
-                return _player.Clip;
+                return _agent.Clip;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CheckPlayer();
-                _player.Clip = value;
+                _agent.Clip = value;
             }
         }
 
@@ -54,7 +54,7 @@ namespace SoundSnap
             get
             {
                 CheckPlayer();
-                return _player.IsPlaying;
+                return _agent.IsPlaying;
             }
         }
 
@@ -64,14 +64,14 @@ namespace SoundSnap
             get
             {
                 CheckPlayer();
-                return _player.Time;
+                return _agent.Time;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CheckPlayer();
-                _player.Time = value;
+                _agent.Time = value;
             }
         }
 
@@ -81,14 +81,14 @@ namespace SoundSnap
             get
             {
                 CheckPlayer();
-                return _player.Mute;
+                return _agent.Mute;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CheckPlayer();
-                _player.Mute = value;
+                _agent.Mute = value;
             }
         }
 
@@ -98,14 +98,14 @@ namespace SoundSnap
             get
             {
                 CheckPlayer();
-                return _player.Volume;
+                return _agent.Volume;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CheckPlayer();
-                _player.Volume = value;
+                _agent.Volume = value;
             }
         }
 
@@ -115,14 +115,14 @@ namespace SoundSnap
             get
             {
                 CheckPlayer();
-                return _player.Pitch;
+                return _agent.Pitch;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CheckPlayer();
-                _player.Pitch = value;
+                _agent.Pitch = value;
             }
         }
 
@@ -133,14 +133,14 @@ namespace SoundSnap
             get
             {
                 CheckPlayer();
-                return _player.PanStereo;
+                return _agent.PanStereo;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CheckPlayer();
-                _player.PanStereo = value;
+                _agent.PanStereo = value;
             }
         }
 
@@ -150,14 +150,14 @@ namespace SoundSnap
             get
             {
                 CheckPlayer();
-                return _player.LoopCount;
+                return _agent.LoopCount;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CheckPlayer();
-                _player.LoopCount = value;
+                _agent.LoopCount = value;
             }
         }
 
@@ -167,14 +167,14 @@ namespace SoundSnap
             get
             {
                 CheckPlayer();
-                return _player.TimeSamples;
+                return _agent.TimeSamples;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CheckPlayer();
-                _player.TimeSamples = value;
+                _agent.TimeSamples = value;
             }
         }
 
@@ -184,14 +184,14 @@ namespace SoundSnap
             get
             {
                 CheckPlayer();
-                return _player.Priority;
+                return _agent.Priority;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CheckPlayer();
-                _player.Priority = value;
+                _agent.Priority = value;
             }
         }
 
@@ -201,14 +201,14 @@ namespace SoundSnap
             get
             {
                 CheckPlayer();
-                return _player.IsCarryingOverLoopDifference;
+                return _agent.IsCarryingOverLoopDifference;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CheckPlayer();
-                _player.IsCarryingOverLoopDifference = value;
+                _agent.IsCarryingOverLoopDifference = value;
             }
         }
 
@@ -218,14 +218,14 @@ namespace SoundSnap
             get
             {
                 CheckPlayer();
-                return _player.LoopStartSample;
+                return _agent.LoopStartSample;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CheckPlayer();
-                _player.LoopStartSample = value;
+                _agent.LoopStartSample = value;
             }
         }
 
@@ -235,14 +235,14 @@ namespace SoundSnap
             get
             {
                 CheckPlayer();
-                return _player.EndSample;
+                return _agent.EndSample;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 CheckPlayer();
-                _player.EndSample = value;
+                _agent.EndSample = value;
             }
         }
 
@@ -252,13 +252,13 @@ namespace SoundSnap
             add
             {
                 CheckPlayer();
-                _player.OnLoop += value;
+                _agent.OnLoop += value;
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             remove
             {
                 CheckPlayer();
-                _player.OnLoop -= value;
+                _agent.OnLoop -= value;
             }
         }
 
@@ -268,13 +268,13 @@ namespace SoundSnap
             add
             {
                 CheckPlayer();
-                _player.OnPlaybackEnd += value;
+                _agent.OnPlaybackEnd += value;
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             remove
             {
                 CheckPlayer();
-                _player.OnPlaybackEnd -= value;
+                _agent.OnPlaybackEnd -= value;
             }
         }
 
@@ -284,7 +284,7 @@ namespace SoundSnap
             get
             {
                 CheckPlayer();
-                return _player.PlayDspTime;
+                return _agent.PlayDspTime;
             }
         }
 
@@ -292,41 +292,41 @@ namespace SoundSnap
         public void Stop()
         {
             CheckPlayer();
-            _player.Stop();
+            _agent.Stop();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Pause()
         {
             CheckPlayer();
-            _player.Pause();
+            _agent.Pause();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UnPause()
         {
             CheckPlayer();
-            _player.UnPause();
+            _agent.UnPause();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetScheduledStartTime(double time)
         {
             CheckPlayer();
-            _player.SetScheduledStartTime(time);
+            _agent.SetScheduledStartTime(time);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetScheduledEndTime(double time)
         {
             CheckPlayer();
-            _player.SetScheduledEndTime(time);
+            _agent.SetScheduledEndTime(time);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private readonly void CheckPlayer()
+        private void CheckPlayer()
         {
-            if (_player == null || _player.Version != _version)
+            if (_agent == null || _agent.Version != _version)
                 throw new InvalidOperationException("The SoundHandle is invalid.");
         }
     }

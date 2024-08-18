@@ -3,7 +3,7 @@ using UnityEngine.UIElements;
 
 namespace SoundSnap.Editor
 {
-    [CustomEditor(typeof(SoundPlayer))]
+    [CustomEditor(typeof(SoundAgent))]
     public class SoundPlayerEditor : UnityEditor.Editor
     {
         private Toggle _isPlayingField;
@@ -26,7 +26,7 @@ namespace SoundSnap.Editor
 
         private void UpdateValues()
         {
-            var soundPlayer = (SoundPlayer)target;
+            var soundPlayer = (SoundAgent)target;
             _stateEnumField.SetValueWithoutNotify(soundPlayer.CurrentPlaybackState);
             _versionField.SetValueWithoutNotify(soundPlayer.Version);
             _playDspTimeField.SetValueWithoutNotify(soundPlayer.PlayDspTime);
@@ -41,7 +41,7 @@ namespace SoundSnap.Editor
         {
             var container = new VisualElement();
 
-            _stateEnumField = new EnumField("Playback State", SoundPlayer.PlaybackState.Free);
+            _stateEnumField = new EnumField("Playback State", SoundAgent.PlaybackState.Free);
             _versionField = new IntegerField("Version");
             _playDspTimeField = new DoubleField("Dsp Time");
             _isPlayingField = new Toggle("Is Playing");

@@ -6,13 +6,13 @@ namespace SoundSnap
 {
     public interface ISoundPool
     {
-        public void ReturnToPool(SoundPlayer soundPlayer);
+        public void ReturnToPool(SoundAgent soundAgent);
     }
 
     public class SoundPool : MonoBehaviour, ISoundPool
     {
         private static SoundPool s_instance;
-        private List<SoundPlayer> _soundPlayers;
+        private List<SoundAgent> _soundPlayers;
         public int PlayerCount { get; private set; }
         public int FreePlayerCount { get; private set; }
 
@@ -41,7 +41,7 @@ namespace SoundSnap
 
             s_instance = this;
 
-            _soundPlayers = new List<SoundPlayer>(SoundSnapSettings.Instance.InitialSoundPlayerCount);
+            _soundPlayers = new List<SoundAgent>(SoundSnapSettings.Instance.InitialSoundPlayerCount);
             for (var i = 0; i < SoundSnapSettings.Instance.InitialSoundPlayerCount; i++)
                 CreatePlayer();
 
@@ -54,10 +54,10 @@ namespace SoundSnap
             s_instance = null;
         }
 
-        public void ReturnToPool(SoundPlayer soundPlayer)
+        public void ReturnToPool(SoundAgent soundAgent)
         {
             FreePlayerCount++;
-            soundPlayer.gameObject.SetActive(false);
+            soundAgent.gameObject.SetActive(false);
         }
 
         public static IEnumerable<SoundHandle> EnumerateActiveSoundHandles()
@@ -96,7 +96,7 @@ namespace SoundSnap
             var _ = new GameObject("SoundPool", typeof(SoundPool));
         }
 
-        private SoundPlayer RentPlayer()
+        private SoundAgent RentPlayer()
         {
             var soundPlayer = GetOrCreatePlayer();
             if (soundPlayer == null) return null;
@@ -107,7 +107,7 @@ namespace SoundSnap
             return soundPlayer;
         }
 
-        private SoundPlayer GetFreeSoundPlayer()
+        private SoundAgent GetFreeSoundPlayer()
         {
             foreach (var soundPlayer in _soundPlayers)
                 if (soundPlayer.IsFree)
@@ -117,7 +117,7 @@ namespace SoundSnap
         }
 
 
-        private SoundPlayer GetOrCreatePlayer()
+        private SoundAgent GetOrCreatePlayer()
         {
             if (FreePlayerCount > 0) return GetFreeSoundPlayer();
 
@@ -131,12 +131,12 @@ namespace SoundSnap
             return null;
         }
 
-        private SoundPlayer CreatePlayer()
+        private SoundAgent CreatePlayer()
         {
             var soundPlayerGameObject = new GameObject("SoundPlayer", typeof(AudioSource));
             soundPlayerGameObject.transform.SetParent(transform);
 
-            var soundPlayer = soundPlayerGameObject.AddComponent<SoundPlayer>();
+            var soundPlayer = soundPlayerGameObject.AddComponent<SoundAgent>();
 
             soundPlayer.SetSoundPool(this);
             soundPlayerGameObject.SetActive(false);
