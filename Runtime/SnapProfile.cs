@@ -5,7 +5,7 @@ using UnityEngine.Audio;
 namespace SoundSnap
 {
     [Serializable]
-    public class SoundProfile : ISoundBuilderFactory
+    public class SnapProfile : ISnapBuilderFactory
     {
         [SerializeField] private AudioClip _clip;
         [SerializeField] private AudioMixerGroup _outputAudioMixerGroup;
@@ -16,18 +16,14 @@ namespace SoundSnap
         [SerializeField] private int _priority = 128;
         [SerializeField] private float _panStereo;
         [SerializeField] private int _startSample;
-        [SerializeField] private int _endSample = -1;
-        [SerializeField] private int _loopStartSample;
-        [SerializeField] private int _loopCount;
+        [SerializeField] private bool _loop;
 
-        [SerializeField] private bool _isCarryingOverLoopDifference = true;
         [SerializeField] private double _delay;
 
-        public SoundBuilder Create()
+        public SnapBuilder CreateBuilder()
         {
-            return Sound.CreateWithInitialValue(_clip, _outputAudioMixerGroup, _mute, _volume, _pitch,
-                _priority, _panStereo, _startSample, _endSample,
-                _loopStartSample, _loopCount, _isCarryingOverLoopDifference,
+            return SnapBuilder.Get().WithAllParams(Vector3.zero, _clip, _outputAudioMixerGroup, _mute, _volume, _pitch,
+                _priority, _panStereo, _startSample, _loop,
                 _delay <= 0 ? TimingMode.Immediate : TimingMode.Delay, _delay);
         }
     }

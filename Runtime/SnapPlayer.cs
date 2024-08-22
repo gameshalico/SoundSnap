@@ -7,22 +7,16 @@ namespace SoundSnap
 {
     [RequireComponent(typeof(AudioSource))]
     [AddComponentMenu("")]
-    public class SoundAgent : MonoBehaviour, ISoundAgent
+    public class SnapPlayer : MonoBehaviour, ISnapControl, ISnapPlayer
     {
-        public enum PlaybackState
-        {
-            Free,
-            Playing,
-            Paused
-        }
-
         private AudioSource _audioSource;
 
-        private Action _onLoop;
-        private Action<PlaybackEndType> _onPlaybackEnd;
-        private ISoundPool _soundPool;
+        private Action _onComplete;
+        private Action _onStart;
+        private Action _onStop;
+        private ISnapPlayerPool _pool;
 
-        public PlaybackState CurrentPlaybackState
+        public PlaybackState State
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
@@ -30,57 +24,35 @@ namespace SoundSnap
             private set;
         }
 
-        public SoundHandle Handle => new(this);
-        public bool IsFree => CurrentPlaybackState == PlaybackState.Free;
+        public SnapHandle Handle => new(this);
+        public bool IsFree => State == PlaybackState.Free;
+
 
         private void Awake()
         {
             _audioSource = GetComponent<AudioSource>();
             _audioSource.playOnAwake = false;
+            _audioSource.loop = false;
 
-            CurrentPlaybackState = PlaybackState.Free;
+            State = PlaybackState.Free;
         }
 
         private void Update()
         {
+            if (State == PlaybackState.Wait && _audioSource.isPlaying)
+            {
+                State = PlaybackState.Playing;
+                _onStart?.Invoke();
+            }
+
             CheckPlayFinished();
         }
 
         private void OnDestroy()
         {
-            EndPlayback(PlaybackEndType.Destroy);
-        }
-
-        public int LoopCount
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set;
-        }
-
-        public bool IsCarryingOverLoopDifference
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set;
-        }
-
-        public int LoopStartSample
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set;
-        }
-
-        public int EndSample
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set;
+            _onStop?.Invoke();
+            _audioSource.Stop();
+            Version++;
         }
 
         public ushort Version
@@ -99,6 +71,14 @@ namespace SoundSnap
             private set;
         }
 
+        public Vector3 Position
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => transform.position;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => transform.position = value;
+        }
+
         public AudioClip Clip
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -114,6 +94,14 @@ namespace SoundSnap
             get => _audioSource.outputAudioMixerGroup;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _audioSource.outputAudioMixerGroup = value;
+        }
+
+        public bool Loop
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _audioSource.loop;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _audioSource.loop = value;
         }
 
         public bool IsPlaying
@@ -180,22 +168,25 @@ namespace SoundSnap
 
         public void Stop()
         {
-            EndPlayback(PlaybackEndType.Stop);
+            State = PlaybackState.Free;
+            _onStop?.Invoke();
+            _audioSource.Stop();
+            ReturnToPool();
         }
 
         public void Pause()
         {
             _audioSource.Pause();
-            CurrentPlaybackState = PlaybackState.Paused;
+            State = PlaybackState.Pause;
         }
 
         public void UnPause()
         {
-            if (CurrentPlaybackState != PlaybackState.Paused)
+            if (State != PlaybackState.Pause)
                 return;
 
             _audioSource.UnPause();
-            CurrentPlaybackState = PlaybackState.Playing;
+            State = PlaybackState.Playing;
         }
 
         public void SetScheduledStartTime(double time)
@@ -209,144 +200,122 @@ namespace SoundSnap
             _audioSource.SetScheduledEndTime(time);
         }
 
-        public event Action OnLoop
+
+        public event Action OnComplete
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            add => _onLoop += value;
+            add => _onComplete += value;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            remove => _onLoop -= value;
+            remove => _onComplete -= value;
         }
 
-        public event Action<PlaybackEndType> OnPlaybackEnd
+        public event Action OnStart
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            add => _onPlaybackEnd += value;
+            add => _onStart += value;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            remove => _onPlaybackEnd -= value;
+            remove => _onStart -= value;
+        }
+
+        public event Action OnStop
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            add => _onStop += value;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            remove => _onStop -= value;
+        }
+
+        public SnapHandle Play(in SnapData snapData)
+        {
+            Setup(snapData);
+            PlayAudioSource(snapData.TimingMode, snapData.TimingValue);
+
+            if (snapData.ScheduledEndTime >= 0)
+                SetScheduledEndTime(snapData.ScheduledEndTime);
+
+            return Handle;
         }
 
         private void PlayAudioSource(TimingMode timingMode, double timingValue)
         {
-            PlayDspTime = SoundAgentUtility.EvaluateDspTime(timingMode, timingValue);
-            CurrentPlaybackState = PlaybackState.Playing;
+            PlayDspTime = SnapSoundUtility.EvaluateDspTime(timingMode, timingValue);
             switch (timingMode)
             {
                 case TimingMode.Immediate:
                     _audioSource.Play();
+                    _onStart?.Invoke();
+                    State = PlaybackState.Playing;
                     break;
                 case TimingMode.Schedule:
                     _audioSource.PlayScheduled(timingValue);
+                    State = PlaybackState.Wait;
                     break;
                 case TimingMode.Delay:
                     _audioSource.PlayDelayed((float)timingValue);
+                    State = PlaybackState.Wait;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        public void Play(in SoundPlayData soundPlayData)
+        public void SetPool(ISnapPlayerPool snapPlayerPool)
         {
-            SetUp(soundPlayData);
-            PlayAudioSource(soundPlayData.TimingMode, soundPlayData.TimingValue);
-
-            if (soundPlayData.ScheduledEndTime >= 0)
-                SetScheduledEndTime(soundPlayData.ScheduledEndTime);
-        }
-
-        public void SetSoundPool(ISoundPool soundPool)
-        {
-            _soundPool = soundPool;
+            _pool = snapPlayerPool;
         }
 
         private void CheckPlayFinished()
         {
-            if (CurrentPlaybackState != PlaybackState.Playing)
+            if (State != PlaybackState.Playing)
                 return;
 
-            if (_audioSource.timeSamples < EndSample &&
-                _audioSource.isPlaying)
+            if (_audioSource.isPlaying)
                 return;
 
-            if (LoopCount > 0)
-                LoopCount--;
-            if (LoopCount == 0)
-            {
-                EndPlayback(PlaybackEndType.Finish);
-                return;
-            }
-
-            Loop();
+            State = PlaybackState.Free;
+            _onComplete?.Invoke();
+            _audioSource.Stop();
+            ReturnToPool();
         }
 
         private void ReturnToPool()
         {
-            CurrentPlaybackState = PlaybackState.Free;
-            _soundPool.ReturnToPool(this);
-        }
-
-        private void Loop()
-        {
-            if (IsCarryingOverLoopDifference && _audioSource.isPlaying)
-            {
-                var gap = _audioSource.timeSamples - EndSample;
-                _audioSource.timeSamples = LoopStartSample + gap;
-            }
-            else
-            {
-                _audioSource.timeSamples = LoopStartSample;
-            }
-
-            if (!_audioSource.isPlaying)
-                _audioSource.Play();
-
-            _onLoop?.Invoke();
-        }
-
-        private void SetUp(in SoundPlayData soundPlayData)
-        {
+            _pool?.ReturnToPool(this);
             Version++;
-
-            SetUpAudioSource(soundPlayData);
-            SetUpLoopSettings(soundPlayData);
-            SetUpCallbacks(soundPlayData);
         }
 
-        private void SetUpAudioSource(in SoundPlayData soundPlayData)
+        private void Setup(in SnapData snapData)
         {
-            _audioSource.clip = soundPlayData.Clip;
-            _audioSource.outputAudioMixerGroup = soundPlayData.OutputAudioMixerGroup;
-            _audioSource.mute = soundPlayData.Mute;
-            _audioSource.volume = soundPlayData.Volume;
-            _audioSource.pitch = soundPlayData.Pitch;
-            _audioSource.priority = soundPlayData.Priority;
-            _audioSource.panStereo = soundPlayData.PanStereo;
-            _audioSource.timeSamples = soundPlayData.StartSample;
+            if (State != PlaybackState.Free)
+            {
+                _onStop?.Invoke();
+                _audioSource.Stop();
+                Version++;
+            }
+
+            transform.position = snapData.Position;
+            SetupAudioSource(snapData);
+            SetupCallbacks(snapData);
         }
 
-        private void SetUpLoopSettings(in SoundPlayData soundPlayData)
+        private void SetupAudioSource(in SnapData snapData)
         {
-            LoopStartSample = soundPlayData.LoopStartSample;
-            EndSample = soundPlayData.EndSample;
-            LoopCount = soundPlayData.LoopCount;
-            IsCarryingOverLoopDifference = soundPlayData.IsCarryingOverLoopDifference;
+            _audioSource.clip = snapData.Clip;
+            _audioSource.loop = snapData.Loop;
+            _audioSource.outputAudioMixerGroup = snapData.OutputAudioMixerGroup;
+            _audioSource.mute = snapData.Mute;
+            _audioSource.volume = snapData.Volume;
+            _audioSource.pitch = snapData.Pitch;
+            _audioSource.priority = snapData.Priority;
+            _audioSource.panStereo = snapData.PanStereo;
+            _audioSource.timeSamples = snapData.StartSample;
         }
 
-        private void SetUpCallbacks(in SoundPlayData soundPlayData)
+        private void SetupCallbacks(in SnapData snapData)
         {
-            _onPlaybackEnd = soundPlayData.OnPlaybackEnd;
-            _onLoop = soundPlayData.OnLoop;
-        }
-
-
-        private void EndPlayback(PlaybackEndType playEndType)
-        {
-            if (CurrentPlaybackState == PlaybackState.Free)
-                return;
-
-            _audioSource.Stop();
-            _onPlaybackEnd?.Invoke(playEndType);
-            ReturnToPool();
+            _onComplete = snapData.OnComplete;
+            _onStart = snapData.OnStart;
+            _onStop = snapData.OnStop;
         }
     }
 }

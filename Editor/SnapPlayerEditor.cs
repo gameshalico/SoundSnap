@@ -3,11 +3,10 @@ using UnityEngine.UIElements;
 
 namespace SoundSnap.Editor
 {
-    [CustomEditor(typeof(SoundAgent))]
-    public class SoundAgentEditor : UnityEditor.Editor
+    [CustomEditor(typeof(SnapPlayer))]
+    public class SnapPlayerEditor : UnityEditor.Editor
     {
         private Toggle _isPlayingField;
-        private IntegerField _loopCountField;
         private DoubleField _playDspTimeField;
         private EnumField _stateEnumField;
         private FloatField _timeField;
@@ -26,14 +25,13 @@ namespace SoundSnap.Editor
 
         private void UpdateValues()
         {
-            var soundPlayer = (SoundAgent)target;
-            _stateEnumField.SetValueWithoutNotify(soundPlayer.CurrentPlaybackState);
+            var soundPlayer = (SnapPlayer)target;
+            _stateEnumField.SetValueWithoutNotify(soundPlayer.State);
             _versionField.SetValueWithoutNotify(soundPlayer.Version);
             _playDspTimeField.SetValueWithoutNotify(soundPlayer.PlayDspTime);
             _isPlayingField.SetValueWithoutNotify(soundPlayer.IsPlaying);
             _timeField.SetValueWithoutNotify(soundPlayer.Time);
             _timeSamplesField.SetValueWithoutNotify(soundPlayer.TimeSamples);
-            _loopCountField.SetValueWithoutNotify(soundPlayer.LoopCount);
         }
 
 
@@ -41,13 +39,12 @@ namespace SoundSnap.Editor
         {
             var container = new VisualElement();
 
-            _stateEnumField = new EnumField("Playback State", SoundAgent.PlaybackState.Free);
+            _stateEnumField = new EnumField("Playback State", PlaybackState.Free);
             _versionField = new IntegerField("Version");
             _playDspTimeField = new DoubleField("Dsp Time");
             _isPlayingField = new Toggle("Is Playing");
             _timeField = new FloatField("Time");
             _timeSamplesField = new IntegerField("Time Samples");
-            _loopCountField = new IntegerField("Loop Count");
 
             _stateEnumField.SetEnabled(false);
             _versionField.SetEnabled(false);
@@ -55,7 +52,6 @@ namespace SoundSnap.Editor
             _isPlayingField.SetEnabled(false);
             _timeField.SetEnabled(false);
             _timeSamplesField.SetEnabled(false);
-            _loopCountField.SetEnabled(false);
 
             UpdateValues();
 
@@ -65,7 +61,6 @@ namespace SoundSnap.Editor
             container.Add(_isPlayingField);
             container.Add(_timeField);
             container.Add(_timeSamplesField);
-            container.Add(_loopCountField);
 
             return container;
         }

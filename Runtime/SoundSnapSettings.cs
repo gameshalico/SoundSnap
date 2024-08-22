@@ -10,28 +10,10 @@ namespace SoundSnap
     {
         private static SoundSnapSettings _instance;
 
-        [Header("Pool Settings")] [SerializeField]
-        private int _initialSoundPlayerCount;
-
-        [SerializeField] private int _maxSoundPlayerCount = -1;
         [SerializeField] private bool _isAutoGeneratePool = true;
-        [SerializeField] private bool _isDontDestroyOnLoad = true;
-
-        [Header("Warnings")]
-        [Tooltip("If true, a warning will be logged if the maximum sound player count is exceeded.")]
-        [SerializeField]
-        private bool _warnIfMaxSoundPlayerCountIsExceeded;
-
-        [Tooltip("If true, a warning will be logged if the output audio mixer group is null.")] [SerializeField]
-        private bool _warnIfOutputAudioMixerGroupIsNull = true;
-
-        public int InitialSoundPlayerCount => _initialSoundPlayerCount;
-        public int MaxSoundPlayerCount => _maxSoundPlayerCount;
+        [SerializeField] private SnapPlayerPool _defaultPoolPrefab;
         public bool IsAutoGeneratePool => _isAutoGeneratePool;
-        public bool IsDontDestroyOnLoad => _isDontDestroyOnLoad;
-        public bool WarnIfMaxSoundPlayerCountIsExceeded => _warnIfMaxSoundPlayerCountIsExceeded;
-        public bool WarnIfOutputAudioMixerGroupIsNull => _warnIfOutputAudioMixerGroupIsNull;
-
+        public SnapPlayerPool DefaultPoolPrefab => _defaultPoolPrefab;
 
         public static SoundSnapSettings Instance
         {

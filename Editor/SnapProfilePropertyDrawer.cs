@@ -5,8 +5,8 @@ using UnityEngine.UIElements;
 
 namespace SoundSnap.Editor
 {
-    [CustomPropertyDrawer(typeof(SoundProfile))]
-    public class SoundProfilePropertyDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(SnapProfile))]
+    public class SnapProfilePropertyDrawer : PropertyDrawer
     {
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
@@ -18,20 +18,9 @@ namespace SoundSnap.Editor
             var outputAudioMixerGroupProperty = property.FindPropertyRelative("_outputAudioMixerGroup");
             var muteProperty = property.FindPropertyRelative("_mute");
             var startSampleProperty = property.FindPropertyRelative("_startSample");
-            var endSampleProperty = property.FindPropertyRelative("_endSample");
-            var loopStartSampleProperty = property.FindPropertyRelative("_loopStartSample");
 
             var audioClipField = new PropertyField(clipProperty) { label = "AudioClip" };
-            audioClipField.RegisterValueChangeCallback(evt =>
-            {
-                Undo.RecordObject(clipProperty.serializedObject.targetObject, "Change AudioClip");
 
-                startSampleProperty.intValue = 0;
-                loopStartSampleProperty.intValue = 0;
-                endSampleProperty.intValue = -1;
-
-                startSampleProperty.serializedObject.ApplyModifiedProperties();
-            });
             container.Add(audioClipField);
             container.Add(new PropertyField(outputAudioMixerGroupProperty) { label = "Output" });
             container.Add(new PropertyField(muteProperty));
@@ -41,20 +30,16 @@ namespace SoundSnap.Editor
             AddTimingFields(container, property);
 
 
-            container.Add(new Button(() =>
+            container.Add(new Button(() => { DetectSamples(clipProperty, startSampleProperty); })
             {
-                DetectSamples(clipProperty, startSampleProperty, loopStartSampleProperty, endSampleProperty);
-            })
-            {
-                text = "Auto Detect Start/End Sample"
+                text = "Auto Detect Start Sample"
             });
 
             foldout.Add(container);
             return foldout;
         }
 
-        private static void DetectSamples(SerializedProperty clipProperty, SerializedProperty startSampleProperty,
-            SerializedProperty loopStartSampleProperty, SerializedProperty endSampleProperty)
+        private static void DetectSamples(SerializedProperty clipProperty, SerializedProperty startSampleProperty)
         {
             var audioClip = clipProperty.objectReferenceValue as AudioClip;
             if (audioClip == null)
@@ -68,9 +53,6 @@ namespace SoundSnap.Editor
             Undo.RecordObject(clipProperty.serializedObject.targetObject, "Detect Samples");
 
             startSampleProperty.intValue = samples.startSample;
-            loopStartSampleProperty.intValue = samples.startSample;
-            endSampleProperty.intValue = samples.endSample;
-
             startSampleProperty.serializedObject.ApplyModifiedProperties();
         }
 
@@ -109,18 +91,10 @@ namespace SoundSnap.Editor
         private void AddSamplesFields(VisualElement container, SerializedProperty property)
         {
             var startSampleProperty = property.FindPropertyRelative("_startSample");
-            var endSampleProperty = property.FindPropertyRelative("_endSample");
+            var loopPropertyField = property.FindPropertyRelative("_loop");
 
-            var loopStartSampleProperty = property.FindPropertyRelative("_loopStartSample");
-            var loopCountProperty = property.FindPropertyRelative("_loopCount");
-            var isLoopIntervalPreservedProperty = property.FindPropertyRelative("_isLoopIntervalPreserved");
-
-            container.Add(new PropertyField(loopStartSampleProperty));
-            container.Add(new PropertyField(loopCountProperty));
-            container.Add(new PropertyField(isLoopIntervalPreservedProperty));
-
+            container.Add(new PropertyField(loopPropertyField));
             container.Add(new PropertyField(startSampleProperty));
-            container.Add(new PropertyField(endSampleProperty));
         }
 
         private void AddTimingFields(VisualElement container, SerializedProperty property)
