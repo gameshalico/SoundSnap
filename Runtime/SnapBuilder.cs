@@ -270,7 +270,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SnapBuilder PlayImmediate()
+        public SnapBuilder WithImmediate()
         {
             ThrowIfInvalidBuffer();
             _buffer.TimingMode = TimingMode.Immediate;
@@ -278,7 +278,7 @@ namespace SoundSnap
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SnapBuilder Schedule(double dspTime)
+        public SnapBuilder WithSchedule(double dspTime)
         {
             ThrowIfInvalidBuffer();
             _buffer.TimingMode = TimingMode.Schedule;
