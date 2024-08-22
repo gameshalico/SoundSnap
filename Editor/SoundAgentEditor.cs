@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 namespace SoundSnap.Editor
 {
     [CustomEditor(typeof(SoundAgent))]
-    public class SoundPlayerEditor : UnityEditor.Editor
+    public class SoundAgentEditor : UnityEditor.Editor
     {
         private Toggle _isPlayingField;
         private IntegerField _loopCountField;
