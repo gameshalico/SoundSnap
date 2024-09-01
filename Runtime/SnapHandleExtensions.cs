@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using UnityEngine;
 #if SOUNDSNAP_UNITASK_SUPPORT
 using Cysharp.Threading.Tasks;
 #endif
@@ -15,6 +16,11 @@ namespace SoundSnap
 
     public static class SnapHandleExtensions
     {
+        public static double ElapsedTime(this SnapHandle self)
+        {
+            return AudioSettings.dspTime - self.PlayDspTime;
+        }
+
         public static SnapHandle WithCancellation(this SnapHandle self,
             CancellationToken cancellationToken, SnapCancellationMode cancellationMode = SnapCancellationMode.None)
         {

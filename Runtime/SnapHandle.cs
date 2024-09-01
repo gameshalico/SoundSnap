@@ -24,6 +24,23 @@ namespace SoundSnap
 
         public static SnapHandle Invalid => new();
 
+        public Vector3 Position
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                ThrowIfInvalid();
+                return _control.Position;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set
+            {
+                ThrowIfInvalid();
+                _control.Position = value;
+            }
+        }
+
 
         public AudioClip Clip
         {
