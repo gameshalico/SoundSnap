@@ -1,8 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SoundSnap
 {
+    public static class SnapGroupMapInitializer
+    {
+        public static event Action OnInitialized;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void Initialize()
+        {
+            OnInitialized?.Invoke();
+        }
+    }
+
     public class SnapGroupMap<TKey>
     {
         private static SnapGroupMap<TKey> s_defaultMap;
@@ -41,10 +53,10 @@ namespace SoundSnap
             _snapGroups.Remove(key);
         }
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void Initialize()
+
+        static SnapGroupMap()
         {
-            s_defaultMap = null;
+            SnapGroupMapInitializer.OnInitialized += () => { s_defaultMap = null; };
         }
     }
 }
