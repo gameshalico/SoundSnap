@@ -49,7 +49,7 @@ namespace SoundSnap
             {
                 await UniTask.WaitWhile(self.IsActive, cancellationToken: cancellationToken);
             }
-            catch (OperationCanceledException e)
+            catch (OperationCanceledException)
             {
                 if (self.IsActive())
                     switch (cancellationMode)
