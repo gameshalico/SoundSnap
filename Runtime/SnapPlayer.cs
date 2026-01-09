@@ -269,6 +269,9 @@ namespace SoundSnap
             if (State != PlaybackState.Playing)
                 return;
 
+            if (_audioSource.loop)
+                return;
+
             if (_audioSource.isPlaying)
                 return;
 
