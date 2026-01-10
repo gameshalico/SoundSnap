@@ -26,5 +26,10 @@ namespace SoundSnap
                 _priority, _panStereo, _startSample, _loop,
                 _delay <= 0 ? TimingMode.Immediate : TimingMode.Delay, _delay);
         }
+
+        public bool IsValid()
+        {
+            return _clip != null;
+        }
     }
 }
